@@ -1,0 +1,158 @@
+# config file for singularity analysis
+dataPath: /home/olivier/Results/singularity
+errMin: .00001
+
+scene: 1
+kill: true
+
+# none / create / display
+plot: display
+
+dt: 0.01
+maxT: 20
+
+lambda: .5
+max_vel: 1
+rot_offset: 0
+
+# transpose / pinv / position / rose
+control: rose
+
+# none / dem / upnp / p4p / epnp
+estim: upnp
+# none / vvs / lm
+ref: none
+reorder: [1,0,2,3]
+# 0321  # qq erreurs
+#   1023  # gros LM VVS
+noise: 0.000
+
+
+# sphere params
+sphere_r: 1     # max radius
+sphere_n: 4    # discretization = pi/this
+sphere_turns: 1  # how many times we compute a pose at a given point
+
+# t, z, r
+# list configurations from Abhilash
+oTc: [0,0,0]
+oTcd: [0,0,0]
+
+# multi-start around singularity (m1 = auto at +-vs_dist)
+vs_dist: .5
+m2: [0.02,0.02,0]
+m3: [-.2,0.6,0]
+m4: [-.7,0.3,0]
+m5: [0.5,-.05,0]
+m6: [0.3,0.4,0]
+0:
+  d1: 0.6
+  d2: 0.4
+  d3: 0.3
+  d4: 0.8
+  d5: 0.4
+  singularity: [1.009595331, -0.08231952894, 2.504038525]
+  ae: "23 33"
+  aes: "4 52"
+1:
+  d1: 0.6
+  d2: 0.4
+  d3: 0.3
+  d4: 0.9
+  d5: 0.3
+  singularity: [1.009595331, -0.08231952894, 2.504038525]
+  #singularity: [1.009595331, -0.08231952894, 2.504038525]
+  ae: "23 33"
+  aes: "4 52"
+2:
+  d1: 0.7
+  d2: 0.3
+  d3: 0.3
+  d4: 0.8
+  d5: 0.3
+  #s: [-1, 0, 3]
+  singularity: [1.019461993, -.3419832309, 2.546854000]
+  ae: "137 26"
+  aes: "169 22"
+3:
+  d1: 0.9
+  d2: 0.3
+  d3: 0.3
+  d4: 0.9
+  d5: 0.4
+  singularity: [.9400352579, -.2374215066, 2.599652061]
+  #s: [-0.2, 0, 3]
+  ae: "14 33"
+  aes: "19 29"
+4:
+  reorder: [0,1,2,3]
+  d1: 0.8
+  d2: 0.3
+  d3: 0.3
+  d4: 0.8
+  d5: 0.3
+  singularity: [.9772221349, -.3060608194, 2.648052457]
+  ae: "14 33"
+  aes: "19 29"
+5:
+  d1: 0.6
+  d2: 0.4
+  d3: 0.9
+  d4: 0.9
+  d5: 0.3
+  singularity: [0., 0., 2.700000000]
+  ae: "137 26"
+  aes: "152 25"
+  m5: [-0.01,0.01,0]
+6:
+  d1: 0.5
+  d2: 0.5
+  d3: 0.9
+  d4: 0.9
+  d5: 0.3
+  singularity: [0., 0., 2.700000000]
+  ae: "14 33"
+  aes: "19 29"
+7:
+  d1: 0.9
+  d2: 0.5
+  d3: 0.3
+  d4: 0.9
+  d5: 0.3
+  singularity: [.9600642226, -0.09286540111, 2.734700759]
+  ae: "14 33"
+  aes: "19 29"
+  m2: [.2,-0.5,.5]
+  m3: [-.2,0.6,-0.1]
+  m4: [-.7,0.3,.1]
+  m5: [0.5,-.05,-0.3]
+  m6: [0.3,0.4,0.5]
+8:
+  d1: 0.5
+  d2: 0.4
+  d3: 0.9
+  d4: 0.9
+  d5: 0.3
+  singularity: [-0.01243122280, -.1208959453, 3.015240107]
+  ae: "14 33"
+  aes: "19 29"
+9:
+  reorder: [2,3,0,1]
+  d1: 0.8
+  d2: 0.3
+  d3: 0.3
+  d4: 0.9
+  d5: 0.3
+  singularity: [.9880917986, -.2759698596, 3.177977894]
+  ae: "14 33"
+  aes: "19 29"
+10:
+  d1: 0.5
+  d2: 0.3
+  d3: 0.9
+  d4: 0.9
+  d5: 0.3
+  singularity: [-0.06198468910, -.3393599974, 3.447075864]
+  #s: [-0.06, -.2, 3.5]
+  ae: "14 33"
+  aes: "19 29"
