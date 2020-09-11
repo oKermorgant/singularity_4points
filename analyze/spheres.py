@@ -6,9 +6,25 @@ import yaml
 from copy import deepcopy
 import time
 
-estims = ('dem','p4p','upnp')
+estims = ('dem','p4p','upnp','epnp')
 ref = ('','_VVS', '_LM')
-r_max = len(sys.argv) == 2 and float(sys.argv[1]) or 1
+
+r_max = 1
+result_dir=''
+
+for arg in sys.argv[1:]:
+    if arg.isdigit():
+        r_max = float(arg)
+    else:
+        result_dir = arg
+        
+if result_dir == '':
+    with open('../config.yaml') as f:
+        config = yaml.safe_load(f)
+    result_dir = config['dataPath']
+    
+if not os.path.exists(result_dir):
+    result_dir = '../results'
 
 def run(cmd, wait = False):
     if wait:
@@ -17,7 +33,9 @@ def run(cmd, wait = False):
         return subprocess.Popen(cmd.split(), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     
 for config in range(1,11):
-    basedir = 'config{}'.format(config)
+    basedir = result_dir + '/config{}'.format(config)
+    if not os.path.exists(basedir):
+        continue
 
     now = time.time()
     
@@ -43,7 +61,7 @@ for config in range(1,11):
             return '{}/{}/'.format(basedir,e)
         
         if not os.path.exists(src_dir(estims[0])):
-            print(dirname(estims[0]) + ' does not exists')
+            print(src_dir(estims[0]) + ' does not exists')
             continue
 
         descriptions = [fi for fi in os.listdir(src_dir(estims[0])) if fi.startswith('sphere') and fi.endswith('_err.yaml') and 'VVS' not in fi and 'LM' not in fi]

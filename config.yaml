@@ -19,19 +19,19 @@ rot_offset: 0
 control: rose
 
 # none / dem / upnp / p4p / epnp
-estim: upnp
+estim: p4p
 # none / vvs / lm
 ref: none
 reorder: [1,0,2,3]
 # 0321  # qq erreurs
 #   1023  # gros LM VVS
-noise: 0.000
+noise: 0.0001
 
 
 # sphere params
 sphere_r: 1     # max radius
-sphere_n: 4    # discretization = pi/this
-sphere_turns: 1  # how many times we compute a pose at a given point
+sphere_n: 12    # discretization = pi/this
+sphere_turns: 10  # how many times we compute a pose at a given point
 
 # t, z, r
 # list configurations from Abhilash

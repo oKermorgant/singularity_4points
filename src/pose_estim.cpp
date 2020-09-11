@@ -44,7 +44,10 @@ PoseEstim::PoseEstim(Scene &scene)
     file_info = method + file_info;
   scene.config.addNameElement(file_info);
 
-  std::cout << "Using method: '" << fullMethod() << "'" << std::endl;
+  std::cout << "Using method: '" << fullMethod()
+            << "' on scene " << scene.scene_n
+            << " with " << scene.config.read<double>("noise")
+            << " noise" << std::endl;
 }
 
 std::string PoseEstim::rawMethod() const
