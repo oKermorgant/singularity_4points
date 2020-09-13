@@ -130,7 +130,7 @@ int main (int argc, char** argv)
   const auto plot = config.read<std::string>("plot");
   if(plot != "none")
   {
-    sphere3D.plot(true, plot == "display");
+    sphere3D.plot(true, plot == "display" || plot == "create");
     transStats.plot(plot=="display");
     rotStats.plot(plot=="display");
   }
