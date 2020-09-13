@@ -184,9 +184,7 @@ int main (int argc, char **argv)
   config.forceParameter("control", "none");
 
   Scene scene(config);
-  scene.initBaseDir(false);
-
-  config.addNameElement("align_");
+  scene.initBaseDir("align", false);
 
   vpHomogeneousMatrix cdMo, cMo;
 

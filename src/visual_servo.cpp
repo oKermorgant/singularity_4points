@@ -103,7 +103,8 @@ int main (int argc, char **argv)
   config.forceParameter("control", "pinv");
 
   Scene scene(config);
-  scene.initBaseDir(false);
+  scene.initBaseDir("multi", false);
+
   const auto errMin(config.read<double>("errMin"));
   const auto dt(config.read<double>( "dt"));
   const auto max_vel(config.read<double>( "max_vel"));
@@ -120,7 +121,6 @@ int main (int argc, char **argv)
 
   const uint n = scene.n_points;
 
-  config.addNameElement("multi");
   PoseEstim estimator(scene);
 
   log2plot::Logger logger(config.fullName() + "_");

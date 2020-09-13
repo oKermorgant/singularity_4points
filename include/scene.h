@@ -22,7 +22,7 @@ class Scene
 public:
   Scene(log2plot::ConfigManager &_config);
 
-  void initBaseDir(bool use_estim = true)
+  std::string initBaseDir(std::string pref, bool use_estim = true)
   {
     auto dataPath = config.read<std::string>("dataPath");
     dataPath = vpIoTools::path(dataPath);
@@ -33,12 +33,19 @@ public:
     if(use_estim)
       dataPath += config.read<std::string>("estim") + "/";
 
+    dataPath += pref + "_";
     if(config.read<double>("noise") != 0)
     {
       auto nz = config.read<std::string>("noise");
-      dataPath += "noise_" + nz.substr(2) + "/";
+      dataPath += nz.substr(2) + "/";
     }
+    else
+      dataPath += "noNoise";
     config.setDirName(dataPath);
+
+    std::cout << "Saving to " << dataPath << std::endl;
+
+    return dataPath;
   }
 
   void buildBaseName(const vpTranslationVector &oTc, double d = 0);

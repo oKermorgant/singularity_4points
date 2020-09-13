@@ -36,13 +36,23 @@ public:
     return  cMo_e * cMo.inverse();
   }
 
-  bool use_estim() const {return method != "none";}
+  std::pair<double, double> errorMetrics(const vpHomogeneousMatrix &cMo,
+                                         const vpHomogeneousMatrix cMo_e)
+  {
+    const auto Merr(cMo_e*cMo.inverse());
+
+    // norm of translation error [m] + abs value of 3D rotation error angle [deg]
+    return {Merr.getTranslationVector().frobeniusNorm(),
+            std::abs(180/M_PI*acos(0.5*(Merr[0][0] + Merr[1][1] + Merr[2][2]-1)))};
+  }
+
+  bool use_estim() const {return method != Method::None;}
   std::vector<vpPoint>* scene_points;
   vpColVector Zerr;
   std::vector<uint> reorder;
   uint n_points;
   vpGaussRand noise;
-  std::string method = "none";
+  Method method = Method::None;
   Refinement refinement = Refinement::None;
 
   std::string refineMethod() const

@@ -35,6 +35,8 @@ add_library(${PROJECT_NAME} SHARED
   src/scene.cpp
   include/pose_estim.h
   src/pose_estim.cpp
+  include/statistics.h
+  src/statistics.cpp
   )
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} opengv ${LAMBDATWIST_LIBRARIES} ${VISP_LIBRARIES} yaml-cpp ${LOG2PLOT_LIBRARIES})
 
@@ -49,3 +51,6 @@ target_link_libraries(sphere  ${PROJECT_NAME})
 
 add_executable(best_orientation_demo src/best_orientation_demo.cpp)
 target_link_libraries(best_orientation_demo ${PROJECT_NAME})
+
+add_executable(test_sphere test_sphere.cpp)
+target_link_libraries(test_sphere ${PROJECT_NAME})

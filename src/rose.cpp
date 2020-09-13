@@ -50,14 +50,12 @@ int main (int argc, char **argv)
   config.forceParameter("control", "rose");
 
   Scene scene(config);
-  scene.initBaseDir(true);
+  scene.initBaseDir("rose", true);
 
   const auto control = config.read<string>("control");
 
   auto &point = scene.points;
   const uint n = scene.n_points;
-
-  config.addNameElement(control);
 
   PoseEstim estimator(scene);
   if(!estimator.use_estim())
@@ -66,7 +64,7 @@ int main (int argc, char **argv)
     return 0;
   }
 
-  log2plot::Logger logger(config.fullName() + "_");
+  log2plot::Logger logger(config.fullName());
 
   vpHomogeneousMatrix cMo(scene.cMoFrom(scene.singular_point));
   Task task(point, cMo);
@@ -137,9 +135,6 @@ int main (int argc, char **argv)
 
     auto [cMo_raw, cMo_final] = estimator.computePoseStep(cMo); {}
 
-    if(estimator.refinement == Refinement::None)
-    cMo_final = cMo_raw;
-
     estimator.computeDepthError(cMo, cMo_final);
 
     pose_ceMs.buildFrom(cMo_final * oMs);
@@ -150,7 +145,6 @@ int main (int argc, char **argv)
       te[ti] = pose_cMce[ti];
 
     pose_cMs.buildFrom(cMo * oMs);
-
 
     // compute from cMo to get real L determinant
     task.computeFrom(cMo, cMo);

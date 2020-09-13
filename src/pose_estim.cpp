@@ -9,7 +9,6 @@
 PoseEstim::PoseEstim(Scene &scene)
   : scene_points(&scene.points), noise(scene.config.read<double>("noise"),0)
 {
-  method = scene.config.read<std::string>("estim");
   auto ref(scene.config.read<std::string>("ref"));
   if(ref == "lm")
     refinement = Refinement::LM;
@@ -22,27 +21,24 @@ PoseEstim::PoseEstim(Scene &scene)
 
   reorder = scene.config.read<std::vector<uint>>(tag);
 
-  const std::vector<std::string> known_methods{
-    "dem",
-    "epnp",
-    "p4p",
-    "upnp"
-  };
+  const auto method_s = scene.config.read<std::string>("estim");
+  if(method_s == "dem")
+    method = Method::DEM;
+  else if(method_s == "epnp")
+    method = Method::EPnP;
+  else if(method_s == "upnp")
+    method = Method::UPnP;
+  else if(method_s == "p4p")
+    method = Method::P4P;
 
-  if(std::find(known_methods.begin(), known_methods.end(), method)
-     == known_methods.end())
-  {
-    method = "none";
+  if(method == Method::None)
     return;
-  }
 
   n_points = static_cast<uint>(scene_points->size());
   Zerr.resize(n_points);
 
-  std::string file_info(refineMethod());
-  if(scene.config.read<std::string>("control") != "rose")
-    file_info = method + file_info;
-  scene.config.addNameElement(file_info);
+  if(refinement != Refinement::None)
+    scene.config.addNameElement(refineMethod() + "_");
 
   std::cout << "Using method: '" << fullMethod()
             << "' on scene " << scene.scene_n
@@ -52,15 +48,18 @@ PoseEstim::PoseEstim(Scene &scene)
 
 std::string PoseEstim::rawMethod() const
 {
-  if(method == "dem")
+  switch (method) {
+  case Method::DEM:
     return "DeMenthon";
-  if(method == "upnp")
-    return "UPnP";
-  if(method == "epnp")
-    return "EPnP";
-  if(method == "p4p")
+  case Method::P4P:
     return "P4P";
-  return "unknown";
+  case Method::UPnP:
+    return "UPnP";
+  case Method::EPnP:
+    return "EPnP";
+  default:
+    return "unknown";
+  }
 }
 
 std::string PoseEstim::fullMethod() const
@@ -108,24 +107,22 @@ vpHomogeneousMatrix PoseEstim::computePose(vpHomogeneousMatrix cMo, bool with_re
     p.set_y(p.get_y() + noise());
   }
 
-  if(method == "dem")
-  {
+  switch (method) {
+  case Method::DEM:
     computePoseViSP(cMo, vpPose::DEMENTHON);
-  }
-  else if(method == "epnp")
-  {
-    computePoseOpenCV(cMo, cv::SOLVEPNP_EPNP);
-  }
-  else if(method == "p4p")
-  {
+    break;
+  case Method::P4P:
     computePoseP4P(cMo);
-  }
-  else if(method == "upnp")
-  {
+    break;
+  case Method::UPnP:
     computePoseUPnP(cMo);
+    break;
+  case Method::EPnP:
+    computePoseOpenCV(cMo, cv::SOLVEPNP_EPNP);
+    break;
+  default:
+    std::cout << "Method " << rawMethod() << " not implemented\n";
   }
-  else
-    std::cout << "Method " << method << " not implemented\n";
 
   if(with_refine)
     refine(cMo);
@@ -148,7 +145,9 @@ void PoseEstim::refine(vpHomogeneousMatrix &cMo)
     return;
 
   if(refinement == Refinement::VVS)
-  {
+    computePoseViSP(cMo, vpPose::VIRTUAL_VS);
+
+  /*return;
     const double v_min(1e-10);
     const double lambda (0.9);
     const double iter_max(500);
@@ -178,10 +177,10 @@ void PoseEstim::refine(vpHomogeneousMatrix &cMo)
       k = 0;
       for (auto &P: vvs_points)
       {
-        cMo[2][3] = std::max(cMo[2][3], 1e-3);
+       // cMo[2][3] = std::max(cMo[2][3], 1e-3);
         P.track(cMo);
 
-        double x = s[2 * k] = P.get_x(); /* point projected from cMo */
+        double x = s[2 * k] = P.get_x(); // point projected from cMo
         double y = s[2 * k + 1] = P.get_y();
         double Z = P.get_Z();
         L[2 * k][0] = -1 / Z;
@@ -206,7 +205,7 @@ void PoseEstim::refine(vpHomogeneousMatrix &cMo)
       cMoPrev = cMo;
       cMo = vpExponentialMap::direct(v).inverse() * cMo;
     }
-  }
+}*/
   else
   {
     computePoseViSP(cMo, vpPose::LOWE);
