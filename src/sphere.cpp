@@ -56,7 +56,6 @@ int main (int argc, char** argv)
   vpPoseVector pose;
   const double rmax(config.read<double>("sphere_r"));
   const double dmin(config.read<double>("sphere_d"));
-  double dr(std::max(0.02, rmax/20));
 
   const vpTranslationVector oTs(scene.singular_point);
 
@@ -76,9 +75,10 @@ int main (int argc, char** argv)
   const uint turns(config.read<double>("noise") == 0. ? 1 : config.read<uint>("sphere_turns"));
 
   double r = 0.001;
+  const double dr(0.01);
   while(r < rmax+dr)
   {
-    const bool do_3D(r < 0.5 && r+dr >= 0.5);
+    const bool do_3D(r < 0.1 && r+dr >= 0.1);
 
     const auto T = spherePoints(r, dmin);
 
@@ -100,7 +100,7 @@ int main (int argc, char** argv)
 
         if(do_3D)
           sphere3D.showFixedObject<vpTranslationVector>(
-          {sTc*r, cMo_e.inverse().getTranslationVector()-oTs},
+          {sTc, cMo_e.inverse().getTranslationVector()-oTs},
                 "[[0,1]]", "b.-");
 
         const auto [te,re] = estimator.errorMetrics(cMo, cMo_e); {}
@@ -120,10 +120,7 @@ int main (int argc, char** argv)
 
     if(r == 0.001)
       r = 0;
-    if(r < 0.2)
-      r += 0.02;
-    else
-      r += dr;
+    r += dr;
   }
 
   const auto plot = config.read<std::string>("plot");

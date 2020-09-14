@@ -2,7 +2,7 @@
 dataPath: /home/olivier/Results/singularity
 errMin: .00001
 
-scene: 2
+scene: 3
 kill: true
 
 # none / create / display
@@ -31,7 +31,7 @@ noise: 0.0001
 # sphere params
 sphere_r: 0.6    # max radius
 sphere_d: 0.1    # min distance along 2 points on the sphere
-sphere_turns: 5  # how many times we compute a pose at a given point
+sphere_turns: 10  # how many times we compute a pose at a given point
 
 # t, z, r
 # list configurations from Abhilash
