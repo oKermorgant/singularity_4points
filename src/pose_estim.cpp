@@ -6,7 +6,7 @@
 #include <opengv/absolute_pose/methods.hpp>
 #include <lambdatwist/pnp/p4p.h>
 
-PoseEstim::PoseEstim(Scene &scene)
+PoseEstim::PoseEstim(Scene &scene, std::string sim_prefix)
   : scene_points(&scene.points), noise(scene.config.read<double>("noise"),0)
 {
   auto ref(scene.config.read<std::string>("ref"));
@@ -31,14 +31,42 @@ PoseEstim::PoseEstim(Scene &scene)
   else if(method_s == "p4p")
     method = Method::P4P;
 
+  // build base directory
+  auto dataPath = scene.config.read<std::string>("dataPath");
+  dataPath = vpIoTools::path(dataPath);
+  if(!vpIoTools::checkDirectory(dataPath))
+    dataPath = std::string(SRC_PATH) + "/results";
+
+  // scene level
+  dataPath +=  "/scene" + scene.scene_n + "/";
+
+  // estimator level
+  if(method != Method::None)
+  {
+    dataPath += method_s;
+    if(refinement != Refinement::None)
+      dataPath += "_" + ref;
+  }
+  else
+    dataPath += "no_estim";
+  dataPath += "/" + sim_prefix + "_";
+
+  if(scene.config.read<double>("noise") != 0)
+  {
+    auto nz = scene.config.read<std::string>("noise");
+    dataPath += nz.substr(2) + "/";
+  }
+  else
+    dataPath += "noNoise";
+  scene.config.setDirName(dataPath);
+
+  std::cout << "Saving to " << dataPath << std::endl;
+
   if(method == Method::None)
     return;
 
   n_points = static_cast<uint>(scene_points->size());
   Zerr.resize(n_points);
-
-  if(refinement != Refinement::None)
-    scene.config.addNameElement(refineMethod() + "_");
 
   std::cout << "Using method: '" << fullMethod()
             << "' on scene " << scene.scene_n

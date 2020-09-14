@@ -13,7 +13,7 @@ class PoseEstim
 {
 public:
 
-  PoseEstim(Scene &scene);
+  PoseEstim(Scene &scene, std::string sim_prefix);
 
   std::string rawMethod() const;
   std::string fullMethod() const;

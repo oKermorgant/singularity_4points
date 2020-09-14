@@ -22,34 +22,6 @@ class Scene
 public:
   Scene(log2plot::ConfigManager &_config);
 
-  std::string initBaseDir(std::string pref, bool use_estim = true)
-  {
-    auto dataPath = config.read<std::string>("dataPath");
-    dataPath = vpIoTools::path(dataPath);
-    if(!vpIoTools::checkDirectory(dataPath))
-      dataPath = std::string(SRC_PATH) + "/results";
-
-    dataPath +=  "/config" + scene_n + "/";
-    if(use_estim)
-      dataPath += config.read<std::string>("estim") + "/";
-
-    dataPath += pref + "_";
-    if(config.read<double>("noise") != 0)
-    {
-      auto nz = config.read<std::string>("noise");
-      dataPath += nz.substr(2) + "/";
-    }
-    else
-      dataPath += "noNoise";
-    config.setDirName(dataPath);
-
-    std::cout << "Saving to " << dataPath << std::endl;
-
-    return dataPath;
-  }
-
-  void buildBaseName(const vpTranslationVector &oTc, double d = 0);
-
   double distToSingularity(const vpTranslationVector &oTc) const
   {
     return (singular_point-oTc).frobeniusNorm();

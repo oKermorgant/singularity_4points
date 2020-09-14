@@ -182,9 +182,10 @@ int main (int argc, char **argv)
   log2plot::ConfigManager config(std::string(SRC_PATH) + "/config.yaml");
   config.updateFrom(argc, argv);
   config.forceParameter("control", "none");
+  config.forceParameter("estim", "none");
 
   Scene scene(config);
-  scene.initBaseDir("align", false);
+  PoseEstim estimator(scene, "align_demo");
 
   vpHomogeneousMatrix cdMo, cMo;
 

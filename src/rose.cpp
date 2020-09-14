@@ -50,22 +50,20 @@ int main (int argc, char **argv)
   config.forceParameter("control", "rose");
 
   Scene scene(config);
-  scene.initBaseDir("rose", true);
+  PoseEstim estimator(scene, "rose");
 
-  const auto control = config.read<string>("control");
-
-  auto &point = scene.points;
-  const uint n = scene.n_points;
-
-  PoseEstim estimator(scene);
   if(!estimator.use_estim())
   {
     std::cerr << "No estimator given\n";
     return 0;
   }
+  const auto control = config.read<string>("control");
 
   log2plot::Logger logger(config.fullName());
 
+  // to build the interaction matrix
+  auto &point = scene.points;
+  const uint n = scene.n_points;
   vpHomogeneousMatrix cMo(scene.cMoFrom(scene.singular_point));
   Task task(point, cMo);
 

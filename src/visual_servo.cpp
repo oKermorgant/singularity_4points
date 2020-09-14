@@ -103,7 +103,7 @@ int main (int argc, char **argv)
   config.forceParameter("control", "pinv");
 
   Scene scene(config);
-  scene.initBaseDir("multi", false);
+  PoseEstim estimator(scene, "visualservo");
 
   const auto errMin(config.read<double>("errMin"));
   const auto dt(config.read<double>( "dt"));
@@ -121,7 +121,7 @@ int main (int argc, char **argv)
 
   const uint n = scene.n_points;
 
-  PoseEstim estimator(scene);
+
 
   log2plot::Logger logger(config.fullName() + "_");
 

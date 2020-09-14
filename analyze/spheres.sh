@@ -1,7 +1,8 @@
 modes="dem p4p upnp epnp"
 refs="none vvs lm"
-noises="0 0.01 0.001 0.0001 0.00001"
-scenes="1 2 3 4 5 6 7 8 9 10"
+noises="0 0.0001 0.00001"
+#scenes="1 2 3 4 5 6 7 8 9 10"
+scenes="2 12"
 
 dataPath=/home/olivier/Results/singularity
 if [ "$HOSTNAME" = sterne ]; then

@@ -39,9 +39,8 @@ int main (int argc, char** argv)
   config.updateFrom(argc, argv);
 
   Scene scene(config);
-  scene.initBaseDir("sphere");
+  PoseEstim estimator(scene, "sphere");
 
-  PoseEstim estimator(scene);
   if(!estimator.use_estim())
   {
     std::cout << "Estimation method not valid\n";
