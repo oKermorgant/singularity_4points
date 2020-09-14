@@ -91,10 +91,10 @@ int main (int argc, char** argv)
       uint err_idx = 0;
       for(const auto &sTc: T)
       {
-        if(scene.distToClosestPoint(oTs + sTc*r) < 2)
+        if(scene.distToClosestPoint(oTs + sTc) < 2)
           continue;
 
-        cMo = scene.cMoFrom(oTs + sTc*r);
+        cMo = scene.cMoFrom(oTs + sTc);
 
         vpHomogeneousMatrix cMo_e(estimator.computePose(cMo));
 
