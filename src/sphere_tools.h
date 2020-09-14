@@ -38,7 +38,7 @@ std::vector<vpTranslationVector> spherePoints(double r, double dmin)
 
   // generate n points on the sphere
   // distance to 3 closest neighboors is less than dmin
-  const uint n = std::max<uint>(12, pow(4.1*r/dmin, 2));
+  const uint n = std::max<uint>(100, pow(4.1*r/dmin, 2));
   std::vector<vpTranslationVector> points;
   points.reserve(n);
 
