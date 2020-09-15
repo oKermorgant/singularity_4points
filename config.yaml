@@ -31,7 +31,7 @@ noise: 0.0001
 # sphere params
 sphere_r: 0.6    # max radius
 sphere_d: 0.1    # min distance along 2 points on the sphere
-sphere_turns: 10  # how many times we compute a pose at a given point
+sphere_turns: 1  # how many times we compute a pose at a given point
 
 # t, z, r
 # list configurations from Abhilash
@@ -45,8 +45,8 @@ m3: [-.2,0.6,0]
 m4: [-.7,0.3,0]
 m5: [0.5,-.05,0]
 m6: [0.3,0.4,0]
-0:  # scene 1 with offset on singularity -> not a singularity anymore
-  d1: 0.6
+1o:  # scene 1 with offset on singularity -> not a singularity anymore
+  d1: 0.7
   d2: 0.4
   d3: 0.3
   d4: 0.9
@@ -72,7 +72,7 @@ m6: [0.3,0.4,0]
   singularity: [1.019461993, -.3419832309, 2.546854000]
   ae: "137 26"
   aes: "169 22"
-12:  # scene 2 with offset on singularity -> not a singularity anymore
+2o:  # scene 2 with offset on singularity -> not a singularity anymore
   d1: 0.7
   d2: 0.3
   d3: 0.3
