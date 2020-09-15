@@ -87,6 +87,7 @@ int main (int argc, char** argv)
   vpTranslationVector sTc;
   while(r < rmax+dr)
   {
+    std::cout << "Computing for radius " << r << " < " << rmax << std::endl;
     const bool do_3D(r < 0.1 && r+dr >= 0.1);
 
     std::vector<double> errT(unitSphere.size(),-1);
