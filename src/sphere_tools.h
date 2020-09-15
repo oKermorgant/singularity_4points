@@ -3,13 +3,12 @@
 
 #include <visp/vpTranslationVector.h>
 
-std::pair<std::vector<vpTranslationVector>, vpMatrix> goldenSphericalSpiral(double r, uint n)
+std::vector<vpTranslationVector> goldenSphericalSpiral(uint n)
 {
   static const double angle_incr(4*M_PI/(1 + sqrt(5)));
 
   std::vector<vpTranslationVector> points;
   points.reserve(n);
-  vpMatrix distances(n,n);
 
   const double n_inv(1./n);
 
@@ -18,16 +17,9 @@ std::pair<std::vector<vpTranslationVector>, vpMatrix> goldenSphericalSpiral(doub
     const double z(i*2*n_inv -1 + n_inv);
     double rho(sqrt(1-z*z));
     const double angle(i*angle_incr);
-    points.emplace_back(r*cos(angle), r*sin(angle), r*z);
-    // also get distance to previous points
-    if(i)
-    {
-      const auto &last(points.back());
-      for(uint j = 0; j < i; ++j)
-        distances[i][j] = distances[j][i] = (points[j]-last).frobeniusNorm();
-    }
+    points.emplace_back(rho*cos(angle), rho*sin(angle), z);
   }
-  return {points, distances};
+  return points;
 }
 
 

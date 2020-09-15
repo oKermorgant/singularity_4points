@@ -72,25 +72,33 @@ int main (int argc, char** argv)
 
   std::vector<std::vector<double>> M(2, {0,0,0});
 
-  const uint turns(config.read<double>("noise") == 0. ? 1 : config.read<uint>("sphere_turns"));
+  // get N sphere points
+  int N(pow(4.1*rmax/dmin, 2));
+  N += N%2-1;
+  const auto &unitSphere = goldenSphericalSpiral(N);
+  std::cout << "Using " << unitSphere.size() << " points" <<  std::endl;
 
-  double r = 0.001;
+
+  uint turns(config.read<double>("noise") == 0. ? 1 : config.read<uint>("sphere_turns"));
+  turns += turns%2-1;
+
+  double r = 0.01;
   const double dr(0.01);
+  vpTranslationVector sTc;
   while(r < rmax+dr)
   {
     const bool do_3D(r < 0.1 && r+dr >= 0.1);
 
-    const auto T = spherePoints(r, dmin);
-
-    std::cout << "Using " << T.size() << " points for radius " << r << std::endl;
-    std::vector<double> errT(T.size(),-1);
-    std::vector<double> errR(T.size(),-1);
+    std::vector<double> errT(unitSphere.size(),-1);
+    std::vector<double> errR(unitSphere.size(),-1);
 
     for(uint turn = 0; turn < turns; ++turn)
     {
       uint err_idx = 0;
-      for(const auto &sTc: T)
+      for(const auto &T1: unitSphere)
       {
+        sTc  = T1*r;
+
         if(scene.distToClosestPoint(oTs + sTc) < 2)
           continue;
 

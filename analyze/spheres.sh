@@ -16,7 +16,7 @@ do
     do
      for noise in $noises
      do
-        ../build/sphere dataPath $dataPath scene $s estim $method ref $ref kill false plot false noise $noise &
+        ../build/sphere dataPath $dataPath scene $s estim $method ref $ref kill false plot none noise $noise &
          done
     done
 done
