@@ -1,30 +1,8 @@
-
-#include <stdlib.h>
-
-#include <visp/vpImage.h>
-#include <visp/vpImageIo.h>
-//#include <visp/vpDisplayX.h>
-#include <visp/vpDisplayOpenCV.h>
-#include <visp/vpCameraParameters.h>
-
-#include <visp/vpMath.h>
-#include <visp/vpSubMatrix.h>
-#include <visp/vpHomogeneousMatrix.h>
-#include <visp/vpParseArgv.h>
-#include <visp/vpIoTools.h>
-#include <visp/vpWireFrameSimulator.h>
-#include <visp/vpRobotCamera.h>
-
-#include <visp/vpPose.h>
-
 #include <log2plot/logger.h>
-
+#include <task.h>
 #include <scene.h>
 #include <pose_estim.h>
-#include <string>
-#include <task.h>
 #include "sphere_tools.h"
-
 #include <statistics.h>
 
 using std::string;
@@ -36,7 +14,7 @@ int main (int argc, char** argv)
 {
   // init and read config file
   log2plot::ConfigManager config(std::string(SRC_PATH) + "/config.yaml");
-  config.updateFrom(argc, argv);
+  config.updateFrom(argc, argv, true);
 
   Scene scene(config);
   PoseEstim estimator(scene, "sphere");
@@ -47,11 +25,10 @@ int main (int argc, char** argv)
     return 0;
   }
 
-  Statistics transStats(config.fullName() + "t_"),
-      rotStats(config.fullName()+"r_");
+  Statistics transStats(config.fullName() + "t_"), rotStats(config.fullName()+"r_");
 
-  transStats.output({"mean","median","p_1","p_10","p_50"}, "Radius [m]", "t", "mm", estimator.fullMethod());
-  rotStats.output({"mean","median","p_1","p_10","p_90"}, "Radius [m]", "\\theta", "deg", estimator.fullMethod());
+  transStats.output({"mean","median","p_2","p_10","p_20"}, "Radius [m]", "t", "mm", estimator.fullMethod());
+  rotStats.output({"mean","median","p_0.5","p_10","p_20"}, "Radius [m]", "\\theta", "deg", estimator.fullMethod());
 
   vpPoseVector pose;
   const double rmax(config.read<double>("sphere_r"));
@@ -72,12 +49,11 @@ int main (int argc, char** argv)
 
   std::vector<std::vector<double>> M(2, {0,0,0});
 
-  // get N sphere points
+  // use N sphere points
   int N(pow(4.1*rmax/dmin, 2));
   N += N%2-1;
   const auto &unitSphere = goldenSphericalSpiral(N);
   std::cout << "Using " << unitSphere.size() << " points" <<  std::endl;
-
 
   uint turns(config.read<double>("noise") == 0. ? 1 : config.read<uint>("sphere_turns"));
   turns += turns%2-1;

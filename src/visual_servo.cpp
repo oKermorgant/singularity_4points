@@ -1,25 +1,8 @@
-#include <stdlib.h>
-#include <visp/vpImage.h>
-#include <visp/vpImageIo.h>
-//#include <visp/vpDisplayX.h>
-#include <visp/vpDisplayOpenCV.h>
-#include <visp/vpCameraParameters.h>
-
-#include <visp/vpMath.h>
-#include <visp/vpSubMatrix.h>
-#include <visp/vpHomogeneousMatrix.h>
-#include <visp/vpParseArgv.h>
-#include <visp/vpIoTools.h>
-#include <visp/vpWireFrameSimulator.h>
-#include <visp/vpRobotCamera.h>
-
-#include <visp/vpPose.h>
-
 #include <log2plot/logger.h>
-
 #include <task.h>
 #include <scene.h>
 #include <pose_estim.h>
+#include <visp/vpRobotCamera.h>
 
 using std::string;
 using std::cout;
@@ -112,7 +95,6 @@ int main (int argc, char **argv)
 
   auto [cMo, cdMo] = scene.vsPoses(); {}
   const auto m(cMo.size());
-  //available.buildPoses(orientation_type), vpRotationMatrix(M_PI, 0,0));
 
   auto &point = scene.points;
 

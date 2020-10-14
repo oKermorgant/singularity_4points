@@ -1,24 +1,4 @@
-
-#include <stdlib.h>
-
-#include <visp/vpImage.h>
-#include <visp/vpImageIo.h>
-//#include <visp/vpDisplayX.h>
-#include <visp/vpDisplayOpenCV.h>
-#include <visp/vpCameraParameters.h>
-
-#include <visp/vpMath.h>
-#include <visp/vpSubMatrix.h>
-#include <visp/vpHomogeneousMatrix.h>
-#include <visp/vpParseArgv.h>
-#include <visp/vpIoTools.h>
-#include <visp/vpWireFrameSimulator.h>
-#include <visp/vpRobotCamera.h>
-
-#include <visp/vpPose.h>
-
 #include <log2plot/logger.h>
-
 #include <task.h>
 #include <scene.h>
 #include <pose_estim.h>
@@ -68,13 +48,20 @@ int main (int argc, char **argv)
   Task task(point, cMo);
 
   unsigned int iter = 0;
-  vpColVector e(n*2), v(6), cond(2), xy(2*n), te(3);
+  vpColVector e(n*2), v(6), cond(2), xy(2*n), ttheta(1);
 
   vpHomogeneousMatrix oMs;
   oMs.insert(scene.singular_point);
   vpPoseVector pose, pose_cMs, pose_ceMs, pose_inter, pose_cMce;
 
-  logger.save(estimator.Zerr, "Z", "Z_", "<Z-depth error> \\frac{Z-\\tilde{Z}}{Z}[\\%]");
+  if(estimator.method == Method::UPnP)
+  {
+    logger.save(estimator.n_solutions, "n_sol", "[n]", "number of solutions from " + estimator.rawMethod());
+    logger.setLineType("[C0o]");
+    logger.setPlotArgs("--legendLoc none");
+  }
+
+  //logger.save(estimator.Zerr, "Z", "Z_", "<Z-depth error> \\frac{Z-\\tilde{Z}}{Z}[\\%]");
 
   // real vs estimated camera pose
   if(estimator.refinement == Refinement::None)
@@ -101,11 +88,13 @@ int main (int argc, char **argv)
   logger.setPlotArgs("--legendCol 2 --ae -60 42");
   //logger.showMovingCamera();
 
-  logger.save(te, "te", "[t_x, t_y, t_z]","Position error [m]");
+  logger.save(ttheta, "te", "[<" + estimator.fullMethod() + ">]","Translation error [m]");
+  //logger.setPlotArgs("--twin 0 --twinLabel 'Rotation error $\\theta_e$ [deg]'");
+  //logger.setPlotArgs("--logY");
   //logger.setPlotArgs("--yLim -0.02 0.02");
-  logger.save(pose_cMce, "cMce",
+  /*logger.save(pose_cMce, "cMce",
               "[t_x,t_y,t_z,\\theta u_x,\\theta u_y,\\theta u_z]","Pose error [m,rad]");
-  logger.setPlotArgs("--legendCol 2 --ae -60 42");
+  logger.setPlotArgs("--legendCol 2 --ae -60 42");*/
 
 
   logger.save(cond, "cond", "['<distance>', '<cond>{}^{-1}\\mathbf{L}']", "distance to singularity [m]");
@@ -115,6 +104,10 @@ int main (int argc, char **argv)
   logger.setLineType("[C0,C2--,C3,C4]");
 
   scene.displayPoints(logger, "C1-s", "rD");
+
+  vpColVector reproj(1);
+  logger.save(reproj, "reproj", "[<" + estimator.fullMethod() + ">]", "Reprojection error");
+  logger.setPlotArgs("--logY");
 
   vpMatrix L;
   bool Zok(true);
@@ -139,8 +132,12 @@ int main (int argc, char **argv)
     pose_inter.buildFrom(cMo_raw * oMs);
     pose_cMce.buildFrom(cMo * cMo_final.inverse());
 
-    for(uint ti = 0; ti < 3; ti++)
-      te[ti] = pose_cMce[ti];
+    const auto [te,the] = estimator.errorMetrics(cMo_final, cMo); {}
+    ttheta[0] = te;
+    //ttheta[1] = the;
+
+    // error
+    reproj[0] = estimator.reprojectionError(cMo, cMo_final);
 
     pose_cMs.buildFrom(cMo * oMs);
 
@@ -162,6 +159,7 @@ int main (int argc, char **argv)
     cond[1] = 1./L.cond(1e-13);
     //dist_hist.push_back(log10(cond[1]));
 
+
     logger.update();
   }
 
@@ -175,7 +173,6 @@ int main (int argc, char **argv)
       steps.push_back(i);
   }
   logger.writeStepsAll(steps, {});
-
   config.saveConfig();
   logger.plot(true, config.read<std::string>("plot") == "display");
 }

@@ -54,7 +54,8 @@ Scene::vsPoses()
   } catch (...) {
 
     // around singular point
-    oTc[0] = oTcd = singular_point[0];
+    oTc[0] = oTcd = singular_point;
+    // 0.7 is of course sqrt(2)/2
     const auto d = 0.7*config.read<double>("vs_dist");
 
     oTc[0][0] += d;
@@ -144,15 +145,15 @@ vpHomogeneousMatrix Scene::cMoFrom(const vpTranslationVector &oTc,
     }
     else if(phase == Phase::ALIGN_REF)
     {
-      L.resize(n_points, 3);
-      H.eye(n_points);
-      s.resize(n_points);
-      sd.resize(n_points);
+      L.resize(2*n_points, 3);
+      H.eye(2*n_points);
+      s.resize(2*n_points);
+      sd.resize(2*n_points);
       for(uint i = 0; i < n_points; ++i)
       {
         points[i].track(cMo_ref);
-        sd[i] = atan2(points[i].get_y(), points[i].get_x());
-        L[i][2] = -1;
+        sd[2*i] = points[i].get_x();
+        sd[2*i+1] = points[i].get_y();
       }
     }
     std::pair<double, uint> maxCoord{-1, 0};
@@ -184,7 +185,8 @@ vpHomogeneousMatrix Scene::cMoFrom(const vpTranslationVector &oTc,
           else
             H[i][i] = 1 - Z/5;
           break;
-        case Phase::CENTER_IMAGE_POINTS:
+        default:
+        //case Phase::CENTER_IMAGE_POINTS:
           // bring all points to the center
           s[2*i] = x;
           s[2*i+1] = y;
@@ -197,12 +199,14 @@ vpHomogeneousMatrix Scene::cMoFrom(const vpTranslationVector &oTc,
           maxCoord = std::max(maxCoord, {std::abs(x), 2*i});
           maxCoord = std::max(maxCoord, {std::abs(y), 2*i+1});
           break;
-        default:
+       /* default:
+          s[2*i] = x;
+          s[2*i+1] = y;
           double rho = sqrt(x*x + y*y);
           double theta = atan2(y, x);
           s[i] = theta;
           L[i][0] = cos(theta)/rho;
-          L[i][1] = sin(theta)/rho;
+          L[i][1] = sin(theta)/rho;*/
         }
       }
 

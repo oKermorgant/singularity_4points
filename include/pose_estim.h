@@ -2,7 +2,6 @@
 #define POSEESTIM_H
 
 #include <visp/vpPose.h>
-#include <opencv2/calib3d.hpp>
 #include <visp/vpGaussRand.h>
 #include <scene.h>
 
@@ -22,8 +21,8 @@ public:
 
   vpHomogeneousMatrix computePose(vpHomogeneousMatrix cMo, bool with_refine = true);
   void computePoseViSP(vpHomogeneousMatrix &cMo, vpPose::vpPoseMethodType visp_method);
-  void computePoseOpenCV(vpHomogeneousMatrix &cMo, int cv_method);
-  void computePoseUPnP(vpHomogeneousMatrix &cMo);
+  void computePoseOpenGV(vpHomogeneousMatrix &cMo);
+  void computePoseEPnP(vpHomogeneousMatrix &cMo);
   void computePoseP4P(vpHomogeneousMatrix &cMo);
 
   void refine(vpHomogeneousMatrix &cMo);
@@ -36,7 +35,7 @@ public:
     return  cMo_e * cMo.inverse();
   }
 
-  std::pair<double, double> errorMetrics(const vpHomogeneousMatrix &cMo,
+  static std::pair<double, double> errorMetrics(const vpHomogeneousMatrix &cMo,
                                          const vpHomogeneousMatrix cMo_e)
   {
     const auto Merr(cMo_e*cMo.inverse());
@@ -46,10 +45,13 @@ public:
             std::abs(180/M_PI*acos(0.5*(Merr[0][0] + Merr[1][1] + Merr[2][2]-1)))};
   }
 
+  double reprojectionError(const vpHomogeneousMatrix &cMo,
+                                  const vpHomogeneousMatrix cdMo) const;
+
   bool use_estim() const {return method != Method::None;}
   std::vector<vpPoint>* scene_points;
   vpColVector Zerr;
-  std::vector<uint> reorder;
+  std::array<int, 1> n_solutions;
   uint n_points;
   vpGaussRand noise;
   Method method = Method::None;

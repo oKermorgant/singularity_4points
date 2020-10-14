@@ -3,30 +3,31 @@ project(singularity_4points)
 
 set(CMAKE_BUILD_TYPE Release)
 
-find_package(log2plot)
 find_package(VISP REQUIRED COMPONENTS core vs imgproc mbt robot)
-find_package(opengv)
-find_package(lambdatwist)
 
-set(CMAKE_CXX_STANDARD 17)
+set(BUILD_EXAMPLES OFF)
+set(ENABLE_DYNAMIC_PLOT  OFF)
+set(BUILD_PARSER ON)
+add_subdirectory(submodules/log2plot)
+
+set(BUILD_TESTS OFF)   
+add_subdirectory(submodules/opengv)
+add_subdirectory(submodules/lambdatwist_pnp)
+
 
 add_definitions( -fPIC )
 add_definitions (-march=native)
-
 add_definitions(-DSRC_PATH="${CMAKE_CURRENT_SOURCE_DIR}")
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_BUILD_TYPE Release)
 
-## Specify additional locations of header files
-## Your package locations should be listed before other locations
-#include_directories(include)
-# TODO: Check names of system library include directories (visp)
 include_directories(
   include
   ${VISP_INCLUDE_DIRS}
-  ${LOG2PLOT_INCLUDE_DIRS}
-  ${opengv_INCLUDE_DIRS} ${LAMBDATWIST_INCLUDE_DIRS}
+  submodules/log2plot/include
+  submodules/opengv/include
+  submodules/lambdatwist_pnp
 )
 
 add_library(${PROJECT_NAME} SHARED
@@ -38,7 +39,7 @@ add_library(${PROJECT_NAME} SHARED
   include/statistics.h
   src/statistics.cpp
   )
-target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} opengv ${LAMBDATWIST_LIBRARIES} ${VISP_LIBRARIES} yaml-cpp ${LOG2PLOT_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} opengv lambdatwist ${VISP_LIBRARIES} yaml-cpp log2plot)
 
 add_executable(rose  src/rose.cpp)
 target_link_libraries(rose ${PROJECT_NAME})
@@ -49,8 +50,9 @@ target_link_libraries(visual_servo ${PROJECT_NAME})
 add_executable(sphere src/sphere.cpp)
 target_link_libraries(sphere  ${PROJECT_NAME})
 
+add_executable(energy src/energy.cpp)
+target_link_libraries(energy ${PROJECT_NAME})
+
 add_executable(best_orientation_demo src/best_orientation_demo.cpp)
 target_link_libraries(best_orientation_demo ${PROJECT_NAME})
 
-add_executable(test_sphere test_sphere.cpp)
-target_link_libraries(test_sphere ${PROJECT_NAME})

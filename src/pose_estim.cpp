@@ -1,5 +1,4 @@
 #include <pose_estim.h>
-#include <opencv2/core.hpp>
 #include <numeric>
 #include <visp/vpExponentialMap.h>
 #include <opengv/absolute_pose/CentralAbsoluteAdapter.hpp>
@@ -14,12 +13,6 @@ PoseEstim::PoseEstim(Scene &scene, std::string sim_prefix)
     refinement = Refinement::LM;
   else if(ref == "vvs")
     refinement = Refinement::VVS;
-
-  std::string tag = "reorder";
-  if(scene.config.has(scene.scene_n + ":" + tag))
-    tag = scene.scene_n + ":" + tag;
-
-  reorder = scene.config.read<std::vector<uint>>(tag);
 
   const auto method_s = scene.config.read<std::string>("estim");
   if(method_s == "dem")
@@ -49,15 +42,18 @@ PoseEstim::PoseEstim(Scene &scene, std::string sim_prefix)
   }
   else
     dataPath += "no_estim";
-  dataPath += "/" + sim_prefix + "_";
+  dataPath += "/" + sim_prefix;
 
-  if(scene.config.read<double>("noise") != 0)
+  if(method != Method::None)
   {
-    auto nz = scene.config.read<std::string>("noise");
-    dataPath += nz.substr(2) + "/";
+    if(scene.config.read<double>("noise") != 0)
+    {
+      auto nz = scene.config.read<std::string>("noise");
+      dataPath +=  "_" + nz.substr(2) + "/";
+    }
+    else
+      dataPath += "_noNoise";
   }
-  else
-    dataPath += "noNoise";
   scene.config.setDirName(dataPath);
 
   std::cout << "Saving to " << dataPath << std::endl;
@@ -142,12 +138,11 @@ vpHomogeneousMatrix PoseEstim::computePose(vpHomogeneousMatrix cMo, bool with_re
   case Method::P4P:
     computePoseP4P(cMo);
     break;
-  case Method::UPnP:
-    computePoseUPnP(cMo);
-    break;
   case Method::EPnP:
-    computePoseOpenCV(cMo, cv::SOLVEPNP_EPNP);
+  case Method::UPnP:
+    computePoseOpenGV(cMo);
     break;
+
   default:
     std::cout << "Method " << rawMethod() << " not implemented\n";
   }
@@ -174,101 +169,11 @@ void PoseEstim::refine(vpHomogeneousMatrix &cMo)
 
   if(refinement == Refinement::VVS)
     computePoseViSP(cMo, vpPose::VIRTUAL_VS);
-
-  /*return;
-    const double v_min(1e-10);
-    const double lambda (0.9);
-    const double iter_max(500);
-
-
-    const uint np(scene_points->size());
-    vpMatrix L(2*np, 6);
-    vpColVector sd(2 * np), s(2 * np);
-    vpColVector v(6, 1);
-
-    // create sd
-    uint k(0);
-    std::vector<vpPoint> vvs_points;
-    for(auto P: *scene_points)
-    {
-      sd[2 * k] = P.get_x();
-      sd[2 * k + 1] = P.get_y();
-      vvs_points.push_back(P);
-      k++;
-    }
-
-    vpHomogeneousMatrix cMoPrev = cMo;
-
-    uint iter(0);
-    while (iter++ < iter_max && v.frobeniusNorm() > v_min)
-    {
-      k = 0;
-      for (auto &P: vvs_points)
-      {
-       // cMo[2][3] = std::max(cMo[2][3], 1e-3);
-        P.track(cMo);
-
-        double x = s[2 * k] = P.get_x(); // point projected from cMo
-        double y = s[2 * k + 1] = P.get_y();
-        double Z = P.get_Z();
-        L[2 * k][0] = -1 / Z;
-        L[2 * k][1] = 0;
-        L[2 * k][2] = x / Z;
-        L[2 * k][3] = x * y;
-        L[2 * k][4] = -(1 + x * x);
-        L[2 * k][5] = y;
-
-        L[2 * k + 1][0] = 0;
-        L[2 * k + 1][1] = -1 / Z;
-        L[2 * k + 1][2] = y / Z;
-        L[2 * k + 1][3] = 1 + y * y;
-        L[2 * k + 1][4] = -x * y;
-        L[2 * k + 1][5] = -x;
-        k += 1;
-      }
-      // compute the VVS control law
-      // std::cout << "iter = " << iter << std::endl << L << std::endl << std::endl;
-      v = -lambda * L.pseudoInverse() * (s - sd);
-
-      cMoPrev = cMo;
-      cMo = vpExponentialMap::direct(v).inverse() * cMo;
-    }
-}*/
   else
-  {
     computePoseViSP(cMo, vpPose::LOWE);
-  }
-
 }
 
-
-void PoseEstim::computePoseOpenCV(vpHomogeneousMatrix &cMo, int cv_method)
-{
-  // build opencv matrices
-  std::vector<cv::Point3d> P;
-  std::vector<cv::Point2d> xy;
-
-  for(auto i: reorder)
-  {
-    const auto p = scene_points->operator[](i);
-    P.emplace_back(p.get_oX(), p.get_oY(), p.get_oZ());
-    xy.emplace_back(p.get_x(), p.get_y());
-  }
-
-  cv::Mat K = cv::Mat::eye(3, 3, cv::DataType<double>::type);
-  cv::Mat dist_coeffs = cv::Mat::zeros(4,1,cv::DataType<double>::type);
-  cv::Mat r, t;
-
-  // outputs oMc
-  cv::solvePnP(P, xy, K ,dist_coeffs, r, t, false, cv_method);
-
-  vpThetaUVector tu(r.at<double>(0), r.at<double>(1), r.at<double>(2));
-  vpTranslationVector T(t.at<double>(0), t.at<double>(1), t.at<double>(2));
-
-  cMo.buildFrom(T, tu);
-}
-
-void PoseEstim::computePoseUPnP(vpHomogeneousMatrix &cMo)
+void PoseEstim::computePoseOpenGV(vpHomogeneousMatrix &cMo)
 {
   opengv::bearingVectors_t bearings;
   opengv::points_t points;
@@ -287,9 +192,22 @@ void PoseEstim::computePoseUPnP(vpHomogeneousMatrix &cMo)
 
   opengv::absolute_pose::CentralAbsoluteAdapter adapter(bearings, points);
 
-  opengv::transformations_t solutions =
-      opengv::absolute_pose::upnp(adapter);
+  if(method == Method::EPnP)
+  {
+    auto M_epnp = opengv::absolute_pose::epnp(adapter);
+    for(i = 0; i < 3; ++i)
+    {
+      for(int j = 0; j < 4; ++j)
+        cMo[i][j] = M_epnp(i,j);
+    }
+    cMo = cMo.inverse();
+    return;
+  }
 
+  // UPnP case below
+  auto solutions(opengv::absolute_pose::upnp(adapter));
+
+  n_solutions[0] = solutions.size();
 
   // keep best
   double best_score(1000);
@@ -337,18 +255,63 @@ void PoseEstim::computePoseP4P(vpHomogeneousMatrix &cMo)
 {
   std::vector<cvl::Vector3D> points;
   std::vector<cvl::Vector2D> bearings;
+  vpColVector sd(2*n_points);
+  uint i(0);
+
   for(const auto &p: *scene_points)
   {
     bearings.push_back({p.get_x(), p.get_y()});
     points.push_back({p.get_oX(), p.get_oY(), p.get_oZ()});
+    sd[2*i] = p.get_x();
+    sd[2*i+1] = p.get_y();
+    i++;
   }
-  const auto p3p_M = cvl::p4p(points, bearings, {0,1,2,3}).get3x4();
-  for(int i = 0; i < 3; ++i)
+
+  // get all combinations of p3p
+  cvl::Vector4<uint> indices{0,1,2,3};
+  double err(std::numeric_limits<double>::max());
+  vpHomogeneousMatrix Mc;
+
+  for(int iter = 0; iter < 4; ++iter)
   {
-    for(int j = 0; j < 4; ++j)
-      cMo[i][j] = p3p_M(i,j);
+    const auto p3p_M = cvl::p4p(points, bearings, indices).get3x4();
+    // write this solution as homogeneous matrix
+    for(int i = 0; i < 3; ++i)
+    {
+      for(int j = 0; j < 4; ++j)
+        Mc[i][j] = p3p_M(i,j);
+    }
+    // compute reproj error on unused point
+    auto &p = scene_points->operator[](indices[3]);
+    p.track(Mc);
+    const double dx = p.get_x() - sd[2*indices[3]];
+    const double dy = p.get_y() - sd[2*indices[3]+1];
+    const double this_err(dx*dx + dy*dy);
+    if(this_err < err)
+    {
+      cMo = Mc;
+      err = this_err;
+    }
+
+    // rotate vector for next iteration
+    for(size_t i = 0; i < 3; ++i)
+      std::swap(indices[i], indices[i+1]);
   }
 }
 
+double PoseEstim::reprojectionError(const vpHomogeneousMatrix &cMo, const vpHomogeneousMatrix cdMo) const
+{
+  double s(0);
 
+  for(auto &p: *scene_points)
+  {
+    p.track(cMo);
+    double dx(p.get_x()), dy(p.get_y());
+    p.track(cdMo);
+    dx -= p.get_x();
+    dy -= p.get_y();
+    s += dx*dx + dy*dy;
+  }
+  return sqrt(s);
 
+}

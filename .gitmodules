@@ -1,0 +1,9 @@
+[submodule "submodules/lambdatwist_pnp"]
+	path = submodules/lambdatwist_pnp
+	url = https://github.com/oKermorgant/lambdatwist_pnp.git
+[submodule "submodules/log2plot"]
+	path = submodules/log2plot
+	url = https://github.com/oKermorgant/log2plot
+[submodule "submodules/opengv"]
+	path = submodules/opengv
+	url = https://github.com/laurentkneip/opengv

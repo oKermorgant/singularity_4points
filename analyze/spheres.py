@@ -7,6 +7,16 @@ from copy import deepcopy
 import time
 
 estims = ('dem','p4p','upnp','epnp')
+only_srcs = ['scene1', '_00001']
+
+def interesting(s):
+    if len(only_srcs) == 0:
+        return True
+    
+    for only_src in only_srcs:
+        if s.endswith(only_src):
+            return True
+    return False
 
 def is_estim_folder(d):
     for e in estims:
@@ -49,14 +59,14 @@ def run(cmd, wait = False):
     
     
 # list simulated scenes
-scenes = [pjoin(result_dir, d) for d in os.listdir(result_dir) if d.startswith('scene') and os.path.isdir(pjoin(result_dir, d))]
+scenes = [pjoin(result_dir, d) for d in os.listdir(result_dir) if d.startswith('scene') and os.path.isdir(pjoin(result_dir, d)) and interesting(d)]
 
 for scene in scenes:
     # find processed estimation methods
     methods = [d for d in os.listdir(scene) if is_estim_folder(d)]
     
     # find all performed simulations
-    sims = set([d for m in methods for d in os.listdir(pjoin(scene, m)) if d.startswith('sphere')])
+    sims = set([d for m in methods for d in os.listdir(pjoin(scene, m)) if d.startswith('sphere') and interesting(d)])
     
     for sim in sims:
         dst = os.path.join(scene, sim)

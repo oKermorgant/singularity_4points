@@ -1,23 +1,4 @@
-#include <stdlib.h>
-
-#include <visp/vpImage.h>
-#include <visp/vpImageIo.h>
-//#include <visp/vpDisplayX.h>
-#include <visp/vpDisplayOpenCV.h>
-#include <visp/vpCameraParameters.h>
-
-#include <visp/vpMath.h>
-#include <visp/vpSubMatrix.h>
-#include <visp/vpHomogeneousMatrix.h>
-#include <visp/vpParseArgv.h>
-#include <visp/vpIoTools.h>
-#include <visp/vpWireFrameSimulator.h>
-#include <visp/vpRobotCamera.h>
-
-#include <visp/vpPose.h>
-
 #include <log2plot/logger.h>
-
 #include <task.h>
 #include <scene.h>
 #include <pose_estim.h>
@@ -54,7 +35,7 @@ std::vector<AutoPose> bestOrientationDetail(vpHomogeneousMatrix &oMc,
   vpColVector xy(2*n);
 
   std::vector<Phase> phases;
-    phases.push_back(Phase::BRING_TO_FRONT);
+  phases.push_back(Phase::BRING_TO_FRONT);
 
   phases.push_back(Phase::CENTER_IMAGE_POINTS);
   if(use_ref)
@@ -73,15 +54,15 @@ std::vector<AutoPose> bestOrientationDetail(vpHomogeneousMatrix &oMc,
     }
     else if(phase == Phase::ALIGN_REF)
     {
-      L.resize(n, 3);
-      H.eye(n);
-      s.resize(n);
-      sd.resize(n);
+      L.resize(2*n, 3);
+      H.eye(2*n);
+      s.resize(2*n);
+      sd.resize(2*n);
       for(uint i = 0; i < n; ++i)
       {
         P[i].track(cMo_ref);
-        sd[i] = atan2(P[i].get_y(), P[i].get_x());
-        L[i][2] = -1;
+        sd[2*i] = P[i].get_x();
+        sd[2*i+1] = P[i].get_y();
       }
     }
     std::pair<double, uint> maxCoord{-1, 0};
@@ -123,25 +104,26 @@ std::vector<AutoPose> bestOrientationDetail(vpHomogeneousMatrix &oMc,
           else
             H[i][i] = 1 - Z/5;
           break;
-        case Phase::CENTER_IMAGE_POINTS:
-          // bring all points to the center
+          // case Phase::CENTER_IMAGE_POINTS:
+        default:
+          // bring all points to their desired coordinates (center or ref)
           s[2*i] = x;
           s[2*i+1] = y;
-            L[2*i][0] = x*y;
-            L[2*i][1] = -(1+x*x);
-            L[2*i+1][0] = 1+y*y;
-            L[2*i+1][1] = -x*y;
+          L[2*i][0] = x*y;
+          L[2*i][1] = -(1+x*x);
+          L[2*i+1][0] = 1+y*y;
+          L[2*i+1][1] = -x*y;
           L[2*i][2] = y;
           L[2*i+1][2] = -x;
           maxCoord = std::max(maxCoord, {std::abs(x), 2*i});
           maxCoord = std::max(maxCoord, {std::abs(y), 2*i+1});
           break;
-        default:
+          /* default:
           double rho = sqrt(x*x + y*y);
           double theta = atan2(y, x);
           s[i] = theta;
             L[i][0] = cos(theta)/rho;
-            L[i][1] = sin(theta)/rho;
+            L[i][1] = sin(theta)/rho;*/
         }
       }
 
