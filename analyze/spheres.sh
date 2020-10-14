@@ -1,3 +1,5 @@
+
+
 methods="dem p4p upnp epnp"
 refs="none vvs lm"
 # noises="0 0.0001 0.00001"
@@ -5,7 +7,7 @@ refs="none vvs lm"
 
 scenes="1"
 noises="0.00001"
-methods="dem"   # ok -> dem epnp
+methods="dem" 
 refs="none vvs lm"
 
 dataPath=/home/olivier/Results/singularity
