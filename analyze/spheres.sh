@@ -7,7 +7,7 @@ refs="none vvs lm"
 
 scenes="1"
 noises="0.00001"
-methods="dem" 
+methods="epnp" 
 refs="none vvs lm"
 
 dataPath=/home/olivier/Results/singularity

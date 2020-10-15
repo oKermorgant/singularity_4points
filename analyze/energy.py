@@ -20,10 +20,12 @@ desired = data['fixedObject1']['nodes'][0]
 Z = array([[v == 'nan' and nan or float(v) for v in line] for line in data['data']])
 
 # median filter step for remaining outliers
-Zm = Z.copy()
+Zm = Z[1:-2,1:-2].copy()
+m = amax(Zm)
 for i in range(1, Z.shape[0]-2):
     for j in range(1, Z.shape[0]-2):
-        Zm[i,j] = median(Z[i-1:i+2,j-1:j+2])
+        Zm[i-1,j-1] = median(Z[i-1:i+2,j-1:j+2])/m
+        Zm[i-1,j-1] = -1./(.15+(Zm[i-1,j-1]))
 side = data['args']
 print('Steps: ',Z.shape[0])
 
@@ -34,7 +36,8 @@ axis('equal')
 
 alpha = .6
 
-pos = imshow(Zm.T, extent=(-side,side,-side,side), origin='lower',vmax=alpha*mean(Z) + (1-alpha)*amax(Z))
+pos = imshow(Zm.T, extent=(-side,side,-side,side), origin='lower')
+#,vmax=alpha*mean(Z) + (1-alpha)*amax(Z))
 #fig.colorbar(pos, ax=ax)
 
 if 'o/no_estim' not in os.path.abspath(sys.argv[1]):

@@ -4,7 +4,7 @@
 dataPath: /home/olivier/Results/singularity/
 errMin: .00001
 
-scene: 3
+scene: 1
 kill: true  # killall python at start, to destroy plot windows
 
 # none / create / display
@@ -24,7 +24,7 @@ control: rose
 estim: p4p
 # none / vvs / lm
 ref: none
-noise: 0.0000
+noise: 0
 
 
 # sphere params
