@@ -20,6 +20,6 @@ If the `dataPath` folder does not exists, result files will be created in `<sour
 ### Scripts
 In the `analyze` folder, some scripts allow calling multiple simulations at once. 
 
-In particular, `spheres.sh` will run the `sphere` simulation for all poe computation methods + all refinement methods. This may take quite some time depending on the computer.
+In particular, `spheres.sh` will run the `sphere` simulation for all pose computation methods + all refinement methods. This may take quite some time depending on the computer.
 
 The Python scripts are to be run after the simulations are over, in order to create summary plots.
